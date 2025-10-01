@@ -14,6 +14,7 @@ import Attendance from "./pages/Attendance";
 import FactoryOverview from "./pages/FactoryOverview";
 import Cameras from "./pages/Cameras";
 import Alerts from "./pages/Alerts";
+import AIMonitoring from "./pages/AIMonitoring";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -110,6 +111,16 @@ const App = () => (
                   <ProtectedRoute>
                     <DashboardLayout>
                       <Alerts />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/ai-monitoring"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <AIMonitoring />
                     </DashboardLayout>
                   </ProtectedRoute>
                 }

@@ -5,6 +5,7 @@ import {
   Building2, 
   Video, 
   AlertTriangle,
+  Brain,
   LogOut,
   Moon,
   Sun
@@ -34,6 +35,7 @@ const menuItems = [
   { title: 'Factory Overview', url: '/factory', icon: Building2 },
   { title: 'Cameras', url: '/cameras', icon: Video },
   { title: 'Alerts', url: '/alerts', icon: AlertTriangle },
+  { title: 'AI Monitoring', url: '/ai-monitoring', icon: Brain },
 ];
 
 export function AppSidebar() {

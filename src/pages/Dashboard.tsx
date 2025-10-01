@@ -1,8 +1,13 @@
-import { Users, UserCheck, AlertTriangle, Video } from 'lucide-react';
+import { Users, UserCheck, AlertTriangle, Video, Download, FileText, FileSpreadsheet } from 'lucide-react';
 import { StatsCard } from '@/components/StatsCard';
 import { workers, alerts } from '@/data/workers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { generatePDFReport, generateSalaryExcel } from '@/utils/reportGenerator';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { toast } from '@/hooks/use-toast';
 
 export default function Dashboard() {
   const totalWorkers = workers.length;
@@ -12,13 +17,77 @@ export default function Dashboard() {
 
   const recentAlerts = alerts.slice(0, 3);
 
+  // Chart Data
+  const ppeComplianceData = [
+    { name: 'Wearing PPE', value: presentWorkers - ppeViolations, fill: 'hsl(var(--success))' },
+    { name: 'Not Wearing PPE', value: ppeViolations, fill: 'hsl(var(--destructive))' },
+  ];
+
+  const attendanceData = [
+    { name: 'Present', value: presentWorkers, fill: 'hsl(var(--primary))' },
+    { name: 'Absent', value: totalWorkers - presentWorkers, fill: 'hsl(var(--muted))' },
+  ];
+
+  const violationsByWorker = workers
+    .map(w => ({
+      name: w.name.split(' ')[0],
+      violations: alerts.filter(a => a.workerId === w.id).length,
+    }))
+    .filter(w => w.violations > 0)
+    .sort((a, b) => b.violations - a.violations)
+    .slice(0, 6);
+
+  const handleDownloadPDF = () => {
+    try {
+      generatePDFReport(workers, alerts);
+      toast({
+        title: "Report Downloaded",
+        description: "PDF report has been generated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Download Failed",
+        description: "Failed to generate PDF report.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDownloadExcel = () => {
+    try {
+      generateSalaryExcel(workers, alerts);
+      toast({
+        title: "Salary Report Downloaded",
+        description: "Excel salary report has been generated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Download Failed",
+        description: "Failed to generate Excel report.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">
-          Real-time worker safety monitoring at Devbhoomi Uttarakhand University
-        </p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-muted-foreground mt-1">
+            Real-time worker safety monitoring at Devbhoomi Uttarakhand University
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handleDownloadPDF} className="gap-2">
+            <FileText className="h-4 w-4" />
+            Download Report (PDF)
+          </Button>
+          <Button onClick={handleDownloadExcel} variant="secondary" className="gap-2">
+            <FileSpreadsheet className="h-4 w-4" />
+            Salary Report (Excel)
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -142,6 +211,86 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle>PPE Compliance Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={ppeComplianceData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {ppeComplianceData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle>Attendance Overview</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={attendanceData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {attendanceData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle>Top Violations by Worker</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={violationsByWorker}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="name" stroke="hsl(var(--foreground))" />
+              <YAxis stroke="hsl(var(--foreground))" />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'hsl(var(--card))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '6px'
+                }}
+              />
+              <Legend />
+              <Bar dataKey="violations" fill="hsl(var(--destructive))" name="Violations" />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
     </div>
   );
 }

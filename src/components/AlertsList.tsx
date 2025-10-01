@@ -4,24 +4,26 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, Clock, User, MessageSquare } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { sendN8NAlert } from '@/utils/n8nAlert';
 
 interface AlertsListProps {
   alerts: Alert[];
 }
 
 export function AlertsList({ alerts }: AlertsListProps) {
-  const handleWhatsAppAlert = (alert: Alert) => {
-    // Placeholder for Twilio WhatsApp integration
+  const handleWhatsAppAlert = async (alert: Alert) => {
+    // Extract missing PPE from alert message
+    const missingPPE = alert.message.includes('helmet') ? 'Helmet' :
+                       alert.message.includes('vest') ? 'Safety Vest' :
+                       alert.message.includes('gloves') ? 'Gloves' :
+                       alert.message.includes('boots') ? 'Safety Boots' : 'PPE';
+    
+    // Send alert via N8N webhook
+    await sendN8NAlert(alert.workerName, missingPPE);
+    
     toast({
       title: "WhatsApp Alert Sent",
-      description: `Notification sent to ${alert.workerName}`,
-    });
-    
-    // In production, this would call your Twilio API
-    console.log('Sending WhatsApp alert via Twilio:', {
-      workerId: alert.workerId,
-      workerName: alert.workerName,
-      message: alert.message,
+      description: `Alert sent via N8N for ${alert.workerName}`,
     });
   };
 

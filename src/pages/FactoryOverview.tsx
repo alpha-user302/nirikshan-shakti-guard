@@ -1,8 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Building2, MapPin, Users, Shield } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Building2, MapPin, Users, Shield, Maximize2, Map } from 'lucide-react';
 import factoryLayout from '@/assets/factory-layout.jpg';
 import { workers } from '@/data/workers';
+import Factory3D from '@/components/Factory3D';
 
 export default function FactoryOverview() {
   const activeWorkers = workers.filter((w) => w.attendance === 'Present').length;
@@ -75,33 +77,65 @@ export default function FactoryOverview() {
 
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle>Site Layout</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Maximize2 className="h-5 w-5 text-primary" />
+            Site Visualization
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-lg overflow-hidden border">
-            <img
-              src={factoryLayout}
-              alt="Factory Layout - Devbhoomi Uttarakhand University"
-              className="w-full h-auto"
-            />
-          </div>
-          <div className="mt-4 p-4 bg-muted rounded-lg">
-            <h3 className="font-semibold mb-3">Zone Information</h3>
-            <div className="grid gap-3 md:grid-cols-3">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-success" />
-                <span className="text-sm">Zone A - Safe</span>
+          <Tabs defaultValue="3d" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="3d" className="gap-2">
+                <Maximize2 className="h-4 w-4" />
+                3D View
+              </TabsTrigger>
+              <TabsTrigger value="2d" className="gap-2">
+                <Map className="h-4 w-4" />
+                2D Layout
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="3d">
+              <Factory3D />
+              <div className="mt-4 p-4 bg-muted rounded-lg">
+                <h3 className="font-semibold mb-2">3D Controls</h3>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• Left click + drag to rotate view</li>
+                  <li>• Right click + drag to pan</li>
+                  <li>• Scroll to zoom in/out</li>
+                  <li>• Green workers: Wearing PPE ✓</li>
+                  <li>• Red workers: Missing PPE ✗</li>
+                </ul>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-warning" />
-                <span className="text-sm">Zone B - Caution</span>
+            </TabsContent>
+            
+            <TabsContent value="2d">
+              <div className="rounded-lg overflow-hidden border">
+                <img
+                  src={factoryLayout}
+                  alt="Factory Layout - Devbhoomi Uttarakhand University"
+                  className="w-full h-auto"
+                />
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-destructive" />
-                <span className="text-sm">Zone C - Violation</span>
+              <div className="mt-4 p-4 bg-muted rounded-lg">
+                <h3 className="font-semibold mb-3">Zone Information</h3>
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-success" />
+                    <span className="text-sm">Zone A - Safe</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-warning" />
+                    <span className="text-sm">Zone B - Caution</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-destructive" />
+                    <span className="text-sm">Zone C - Violation</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 

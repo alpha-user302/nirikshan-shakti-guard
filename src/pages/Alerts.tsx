@@ -1,4 +1,5 @@
 import { AlertsList } from '@/components/AlertsList';
+import { N8NWebhookSettings } from '@/components/N8NWebhookSettings';
 import { alerts } from '@/data/workers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, Bell, CheckCircle } from 'lucide-react';
@@ -58,22 +59,18 @@ export default function Alerts() {
         </Card>
       </div>
 
-      <Card className="shadow-card bg-warning/10 border-warning">
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-medium">Twilio WhatsApp Integration</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                WhatsApp alerts are ready to be configured with your Twilio API credentials.
-                Add your Twilio Account SID and Auth Token to enable automated safety notifications.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle>Recent Safety Alerts</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AlertsList alerts={alerts} />
+          </CardContent>
+        </Card>
 
-      <AlertsList alerts={alerts} />
+        <N8NWebhookSettings />
+      </div>
     </div>
   );
 }

@@ -1,4 +1,6 @@
 import { CameraGrid } from '@/components/CameraGrid';
+import { WebcamFeed } from '@/components/WebcamFeed';
+import { N8NWebhookSettings } from '@/components/N8NWebhookSettings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Video, VideoOff, Activity } from 'lucide-react';
 
@@ -53,7 +55,11 @@ export default function Cameras() {
         </Card>
       </div>
 
+      <WebcamFeed />
+      
       <CameraGrid />
+
+      <N8NWebhookSettings />
 
       <Card className="shadow-card bg-muted/50">
         <CardHeader>

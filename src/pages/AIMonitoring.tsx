@@ -32,18 +32,18 @@ export default function AIMonitoring() {
         Math.floor(Math.random() * 3) + 1 : 
         Math.floor(Math.random() * 2);
       
-      // Base salary ranges by role
+      // Base salary ranges by role (15000-20000)
       const baseSalaryMap: Record<string, number> = {
-        'Site Supervisor': 45000,
-        'Safety Inspector': 40000,
-        'Safety Officer': 42000,
-        'Construction Worker': 25000,
-        'Equipment Operator': 32000,
-        'Electrician': 30000,
-        'Welder': 28000,
-        'Quality Control': 35000,
-        'Crane Operator': 38000,
-        'Plumber': 27000,
+        'Site Supervisor': 20000,
+        'Safety Inspector': 19000,
+        'Safety Officer': 19500,
+        'Construction Worker': 15000,
+        'Equipment Operator': 17000,
+        'Electrician': 16500,
+        'Welder': 16000,
+        'Quality Control': 18000,
+        'Crane Operator': 18500,
+        'Plumber': 15500,
       };
 
       const baseSalary = baseSalaryMap[worker.role] || 25000;

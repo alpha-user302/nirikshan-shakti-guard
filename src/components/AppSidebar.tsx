@@ -74,10 +74,10 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 ${
+                        `flex items-center gap-3 text-foreground ${
                           isActive
                             ? 'bg-primary text-primary-foreground font-medium'
-                            : 'hover:bg-accent'
+                            : 'hover:bg-accent hover:text-accent-foreground'
                         } ${isCollapsed ? 'justify-center' : ''}`
                       }
                     >

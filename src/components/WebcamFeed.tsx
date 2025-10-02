@@ -3,11 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Video, VideoOff, Camera } from 'lucide-react';
 import { toast } from 'sonner';
+import { sendN8NAlert } from '@/utils/n8nAlert';
 
 export function WebcamFeed() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [violationDetected, setViolationDetected] = useState(false);
 
   const startCamera = async () => {
     try {
@@ -20,12 +22,42 @@ export function WebcamFeed() {
         videoRef.current.srcObject = mediaStream;
         setStream(mediaStream);
         setIsStreaming(true);
+        setViolationDetected(false);
         toast.success('Camera started successfully');
+        
+        // Simulate AI detection after 2-3 seconds
+        setTimeout(() => {
+          detectViolation();
+        }, 2500);
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
       toast.error('Failed to access camera. Please check permissions.');
     }
+  };
+
+  const detectViolation = () => {
+    const violation = {
+      worker: 'Unknown',
+      missingPPE: 'Helmet & Chest Guard',
+      timestamp: new Date().toISOString()
+    };
+
+    // Store violation in localStorage for AI Monitoring
+    const existingViolations = JSON.parse(localStorage.getItem('camera_violations') || '[]');
+    existingViolations.push(violation);
+    localStorage.setItem('camera_violations', JSON.stringify(existingViolations));
+
+    // Send N8N alert
+    sendN8NAlert(violation.worker, violation.missingPPE);
+
+    // Show toast notification
+    toast.error(`PPE Violation Detected: ${violation.missingPPE} not wearing`, {
+      description: `Worker: ${violation.worker}`,
+      duration: 5000,
+    });
+
+    setViolationDetected(true);
   };
 
   const stopCamera = () => {
@@ -36,6 +68,7 @@ export function WebcamFeed() {
       }
       setStream(null);
       setIsStreaming(false);
+      setViolationDetected(false);
       toast.info('Camera stopped');
     }
   };
@@ -90,10 +123,17 @@ export function WebcamFeed() {
             </div>
           )}
           {isStreaming && (
-            <div className="absolute top-4 left-4 bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2">
-              <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
-              LIVE
-            </div>
+            <>
+              <div className="absolute top-4 left-4 bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2">
+                <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                LIVE
+              </div>
+              {violationDetected && (
+                <div className="absolute top-4 right-4 bg-destructive text-destructive-foreground px-3 py-2 rounded-lg text-sm font-medium animate-pulse border-2 border-white">
+                  ⚠️ PPE VIOLATION DETECTED
+                </div>
+              )}
+            </>
           )}
         </div>
       </CardContent>

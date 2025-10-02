@@ -25,6 +25,9 @@ export default function AIMonitoring() {
     // Simulate AI scanning
     const timer = setTimeout(() => setScanning(false), 2000);
     
+    // Get camera violations from localStorage
+    const cameraViolations = JSON.parse(localStorage.getItem('camera_violations') || '[]');
+    
     // Calculate salaries based on worker data
     const salaryData: WorkerSalary[] = workers.map((worker) => {
       // Calculate violations based on PPE status
@@ -67,6 +70,29 @@ export default function AIMonitoring() {
         lastViolation: worker.ppeStatus === 'Not Wearing' ? worker.lastSeen : 'No recent violations',
       };
     });
+
+    // Add camera violations for "Unknown" worker
+    if (cameraViolations.length > 0) {
+      const unknownViolations = cameraViolations.length;
+      const unknownBaseSalary = 15000; // Minimum base salary
+      const unknownDeductions = unknownViolations * 2;
+      const unknownFinalSalary = unknownBaseSalary - unknownDeductions;
+      const unknownHolidayDeductions = unknownViolations * 0.5;
+      const unknownRemainingHolidays = Math.max(0, 4 - unknownHolidayDeductions);
+
+      salaryData.push({
+        id: 'UNKNOWN',
+        name: 'Unknown',
+        baseSalary: unknownBaseSalary,
+        violations: unknownViolations,
+        deductions: unknownDeductions,
+        finalSalary: unknownFinalSalary,
+        holidays: 4,
+        holidayDeductions: unknownHolidayDeductions,
+        remainingHolidays: unknownRemainingHolidays,
+        lastViolation: cameraViolations[cameraViolations.length - 1].timestamp,
+      });
+    }
 
     setWorkerSalaries(salaryData);
     return () => clearTimeout(timer);

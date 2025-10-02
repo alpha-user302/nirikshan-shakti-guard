@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -15,6 +16,7 @@ import FactoryOverview from "./pages/FactoryOverview";
 import Cameras from "./pages/Cameras";
 import Alerts from "./pages/Alerts";
 import AIMonitoring from "./pages/AIMonitoring";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,16 +27,23 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const { logout } = useAuth();
+  
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col">
-          <header className="h-14 border-b bg-card flex items-center px-4 sticky top-0 z-10">
-            <SidebarTrigger />
-            <div className="ml-4">
-              <h2 className="text-lg font-semibold text-card-foreground">Nirikshan AI Dashboard</h2>
+          <header className="h-14 border-b bg-card flex items-center px-4 sticky top-0 z-10 justify-between">
+            <div className="flex items-center">
+              <SidebarTrigger />
+              <div className="ml-4">
+                <h2 className="text-lg font-semibold text-card-foreground">Nirikshan AI Dashboard</h2>
+              </div>
             </div>
+            <Button variant="outline" onClick={logout}>
+              Logout
+            </Button>
           </header>
           <main className="flex-1 p-6 overflow-auto">
             {children}
@@ -121,6 +130,16 @@ const App = () => (
                   <ProtectedRoute>
                     <DashboardLayout>
                       <AIMonitoring />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <Settings />
                     </DashboardLayout>
                   </ProtectedRoute>
                 }

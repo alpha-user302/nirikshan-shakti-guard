@@ -14,7 +14,169 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      attendance: {
+        Row: {
+          check_in_time: string | null
+          check_out_time: string | null
+          created_at: string
+          date: string
+          id: string
+          notes: string | null
+          status: string
+          worker_id: string
+        }
+        Insert: {
+          check_in_time?: string | null
+          check_out_time?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          status: string
+          worker_id: string
+        }
+        Update: {
+          check_in_time?: string | null
+          check_out_time?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_settings: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
+      violations: {
+        Row: {
+          camera_zone: string | null
+          created_at: string
+          holiday_deduction: number | null
+          id: string
+          location: string | null
+          missing_ppe: string
+          salary_deduction: number | null
+          severity: Database["public"]["Enums"]["violation_severity"]
+          violation_type: string
+          worker_id: string | null
+          worker_name: string
+        }
+        Insert: {
+          camera_zone?: string | null
+          created_at?: string
+          holiday_deduction?: number | null
+          id?: string
+          location?: string | null
+          missing_ppe: string
+          salary_deduction?: number | null
+          severity?: Database["public"]["Enums"]["violation_severity"]
+          violation_type: string
+          worker_id?: string | null
+          worker_name: string
+        }
+        Update: {
+          camera_zone?: string | null
+          created_at?: string
+          holiday_deduction?: number | null
+          id?: string
+          location?: string | null
+          missing_ppe?: string
+          salary_deduction?: number | null
+          severity?: Database["public"]["Enums"]["violation_severity"]
+          violation_type?: string
+          worker_id?: string | null
+          worker_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "violations_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workers: {
+        Row: {
+          base_salary: number | null
+          created_at: string
+          department: string | null
+          email: string | null
+          employee_id: string
+          id: string
+          name: string
+          phone: string | null
+          remaining_holidays: number | null
+          role: Database["public"]["Enums"]["worker_role"]
+          total_holidays: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          base_salary?: number | null
+          created_at?: string
+          department?: string | null
+          email?: string | null
+          employee_id: string
+          id?: string
+          name: string
+          phone?: string | null
+          remaining_holidays?: number | null
+          role?: Database["public"]["Enums"]["worker_role"]
+          total_holidays?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          base_salary?: number | null
+          created_at?: string
+          department?: string | null
+          email?: string | null
+          employee_id?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          remaining_holidays?: number | null
+          role?: Database["public"]["Enums"]["worker_role"]
+          total_holidays?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +185,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      violation_severity: "low" | "medium" | "high" | "critical"
+      worker_role: "operator" | "supervisor" | "technician" | "manager"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +313,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      violation_severity: ["low", "medium", "high", "critical"],
+      worker_role: ["operator", "supervisor", "technician", "manager"],
+    },
   },
 } as const

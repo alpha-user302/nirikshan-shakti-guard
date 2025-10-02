@@ -6,6 +6,7 @@ import {
   Video, 
   AlertTriangle,
   Brain,
+  Settings as SettingsIcon,
   LogOut,
   Moon,
   Sun
@@ -36,6 +37,7 @@ const menuItems = [
   { title: 'Cameras', url: '/cameras', icon: Video },
   { title: 'Alerts', url: '/alerts', icon: AlertTriangle },
   { title: 'AI Monitoring', url: '/ai-monitoring', icon: Brain },
+  { title: 'Settings', url: '/settings', icon: SettingsIcon },
 ];
 
 export function AppSidebar() {

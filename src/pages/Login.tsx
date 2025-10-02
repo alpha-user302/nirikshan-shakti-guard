@@ -7,13 +7,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 import { Shield, Mail, Lock } from 'lucide-react';
 import safetyHero from '@/assets/safety-hero.jpg';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -24,8 +28,44 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    await login(email, password);
-    setIsLoading(false);
+
+    try {
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/dashboard`,
+          },
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: 'Account created!',
+          description: 'You can now log in with your credentials.',
+        });
+        setIsSignUp(false);
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
+        login(email, password);
+        navigate('/dashboard');
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Authentication failed. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -54,9 +94,11 @@ export default function Login() {
                 <Shield className="h-8 w-8 text-primary" />
               </div>
             </div>
-            <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
+            <CardTitle className="text-2xl text-center">
+              {isSignUp ? 'Create Account' : 'Welcome Back'}
+            </CardTitle>
             <CardDescription className="text-center">
-              Enter your credentials to access the dashboard
+              {isSignUp ? 'Sign up to access the dashboard' : 'Enter your credentials to access the dashboard'}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -89,6 +131,7 @@ export default function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10"
                     required
+                    minLength={6}
                   />
                 </div>
               </div>
@@ -98,12 +141,17 @@ export default function Login() {
                 className="w-full bg-gradient-primary"
                 disabled={isLoading}
               >
-                {isLoading ? 'Signing in...' : 'Sign In'}
+                {isLoading ? 'Processing...' : isSignUp ? 'Sign Up' : 'Sign In'}
               </Button>
 
-              <div className="text-center text-sm text-muted-foreground">
-                <p>Demo: Use any email and password</p>
-              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsSignUp(!isSignUp)}
+              >
+                {isSignUp ? 'Already have an account? Login' : "Don't have an account? Sign Up"}
+              </Button>
             </form>
           </CardContent>
         </Card>

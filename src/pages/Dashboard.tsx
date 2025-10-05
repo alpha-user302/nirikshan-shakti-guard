@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Users, UserCheck, AlertTriangle, Video, Download, FileText, FileSpreadsheet } from 'lucide-react';
 import { StatsCard } from '@/components/StatsCard';
 import { workers, alerts } from '@/data/workers';
@@ -8,10 +9,70 @@ import { generatePDFReport, generateSalaryExcel } from '@/utils/reportGenerator'
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Dashboard() {
-  const totalWorkers = workers.length;
-  const presentWorkers = workers.filter((w) => w.attendance === 'Present').length;
+  const [totalWorkers, setTotalWorkers] = useState(0);
+  const [presentWorkers, setPresentWorkers] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch total workers count
+        const { count: workersCount, error: workersError } = await supabase
+          .from('workers')
+          .select('*', { count: 'exact', head: true });
+
+        if (workersError) throw workersError;
+
+        // Fetch today's attendance with status 'present'
+        const today = new Date().toISOString().split('T')[0];
+        const { count: presentCount, error: attendanceError } = await supabase
+          .from('attendance')
+          .select('*', { count: 'exact', head: true })
+          .eq('date', today)
+          .eq('status', 'present');
+
+        if (attendanceError) throw attendanceError;
+
+        setTotalWorkers(workersCount || 0);
+        setPresentWorkers(presentCount || 0);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load dashboard data.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+
+    // Set up realtime subscription for attendance changes
+    const channel = supabase
+      .channel('dashboard-attendance-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'attendance'
+        },
+        () => {
+          fetchDashboardData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const ppeViolations = workers.filter((w) => w.ppeStatus === 'Not Wearing' && w.attendance === 'Present').length;
   const activeCameras = 1;
 

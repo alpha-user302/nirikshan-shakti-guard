@@ -1,1 +1,4 @@
 project_id = "ryaugghyeusvvlswlotd"
+
+[functions.detect-ppe]
+verify_jwt = false

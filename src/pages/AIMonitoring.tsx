@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Brain, Zap, TrendingDown, Calendar, AlertTriangle } from 'lucide-react';
 import { workers } from '@/data/workers';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface WorkerSalary {
   id: string;
@@ -22,80 +24,108 @@ export default function AIMonitoring() {
   const [workerSalaries, setWorkerSalaries] = useState<WorkerSalary[]>([]);
 
   useEffect(() => {
-    // Simulate AI scanning
-    const timer = setTimeout(() => setScanning(false), 2000);
-    
-    // Get camera violations from localStorage
-    const cameraViolations = JSON.parse(localStorage.getItem('camera_violations') || '[]');
-    
-    // Calculate salaries based on worker data
-    const salaryData: WorkerSalary[] = workers.map((worker) => {
-      // Calculate violations based on PPE status
-      const violations = worker.ppeStatus === 'Not Wearing' ? 
-        Math.floor(Math.random() * 3) + 1 : 
-        Math.floor(Math.random() * 2);
+    const fetchViolationsAndCalculate = async () => {
+      setScanning(true);
       
-      // Base salary ranges by role (15000-20000)
-      const baseSalaryMap: Record<string, number> = {
-        'Site Supervisor': 20000,
-        'Safety Inspector': 19000,
-        'Safety Officer': 19500,
-        'Construction Worker': 15000,
-        'Equipment Operator': 17000,
-        'Electrician': 16500,
-        'Welder': 16000,
-        'Quality Control': 18000,
-        'Crane Operator': 18500,
-        'Plumber': 15500,
-      };
+      try {
+        // Fetch violations from database
+        const { data: violationsData, error } = await supabase
+          .from('violations')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      const baseSalary = baseSalaryMap[worker.role] || 25000;
-      const deductions = violations * 2; // ₹2 per violation
-      const finalSalary = baseSalary - deductions;
-      
-      const initialHolidays = 4;
-      const holidayDeductions = violations * 0.5; // 0.5 day per violation
-      const remainingHolidays = Math.max(0, initialHolidays - holidayDeductions);
+        if (error) throw error;
 
-      return {
-        id: worker.id,
-        name: worker.name,
-        baseSalary,
-        violations,
-        deductions,
-        finalSalary,
-        holidays: initialHolidays,
-        holidayDeductions,
-        remainingHolidays,
-        lastViolation: worker.ppeStatus === 'Not Wearing' ? worker.lastSeen : 'No recent violations',
-      };
-    });
+        // Group violations by worker_name
+        const violationsByWorker = new Map<string, any[]>();
+        violationsData?.forEach(violation => {
+          const key = violation.worker_name;
+          if (!violationsByWorker.has(key)) {
+            violationsByWorker.set(key, []);
+          }
+          violationsByWorker.get(key)?.push(violation);
+        });
 
-    // Add camera violations for "Unknown" worker
-    if (cameraViolations.length > 0) {
-      const unknownViolations = cameraViolations.length;
-      const unknownBaseSalary = 15000; // Minimum base salary
-      const unknownDeductions = unknownViolations * 2;
-      const unknownFinalSalary = unknownBaseSalary - unknownDeductions;
-      const unknownHolidayDeductions = unknownViolations * 0.5;
-      const unknownRemainingHolidays = Math.max(0, 4 - unknownHolidayDeductions);
+        // Calculate salaries
+        const salaryData: WorkerSalary[] = [];
+        
+        // Process violations from database
+        violationsByWorker.forEach((violations, workerName) => {
+          const violationCount = violations.length;
+          const baseSalary = 15000; // Base salary for camera-detected workers
+          const deductions = violationCount * 2;
+          const finalSalary = baseSalary - deductions;
+          const initialHolidays = 4;
+          const holidayDeductions = violationCount * 0.5;
+          const remainingHolidays = Math.max(0, initialHolidays - holidayDeductions);
+          const lastViolation = violations[0]?.created_at || 'No recent violations';
 
-      salaryData.push({
-        id: 'UNKNOWN',
-        name: 'Unknown',
-        baseSalary: unknownBaseSalary,
-        violations: unknownViolations,
-        deductions: unknownDeductions,
-        finalSalary: unknownFinalSalary,
-        holidays: 4,
-        holidayDeductions: unknownHolidayDeductions,
-        remainingHolidays: unknownRemainingHolidays,
-        lastViolation: cameraViolations[cameraViolations.length - 1].timestamp,
-      });
-    }
+          salaryData.push({
+            id: workerName.replace(/\s+/g, '_'),
+            name: workerName,
+            baseSalary,
+            violations: violationCount,
+            deductions,
+            finalSalary,
+            holidays: initialHolidays,
+            holidayDeductions,
+            remainingHolidays,
+            lastViolation: new Date(lastViolation).toLocaleString(),
+          });
+        });
 
-    setWorkerSalaries(salaryData);
-    return () => clearTimeout(timer);
+        // Add workers from data (if they have PPE violations)
+        workers.forEach((worker) => {
+          if (worker.ppeStatus === 'Not Wearing') {
+            const existingWorker = salaryData.find(w => w.name === worker.name);
+            if (!existingWorker) {
+              const baseSalaryMap: Record<string, number> = {
+                'Site Supervisor': 20000,
+                'Safety Inspector': 19000,
+                'Safety Officer': 19500,
+                'Construction Worker': 15000,
+                'Equipment Operator': 17000,
+                'Electrician': 16500,
+                'Welder': 16000,
+                'Quality Control': 18000,
+                'Crane Operator': 18500,
+                'Plumber': 15500,
+              };
+
+              const baseSalary = baseSalaryMap[worker.role] || 15000;
+              const violations = Math.floor(Math.random() * 3) + 1;
+              const deductions = violations * 2;
+              const finalSalary = baseSalary - deductions;
+              const initialHolidays = 4;
+              const holidayDeductions = violations * 0.5;
+              const remainingHolidays = Math.max(0, initialHolidays - holidayDeductions);
+
+              salaryData.push({
+                id: worker.id,
+                name: worker.name,
+                baseSalary,
+                violations,
+                deductions,
+                finalSalary,
+                holidays: initialHolidays,
+                holidayDeductions,
+                remainingHolidays,
+                lastViolation: worker.lastSeen,
+              });
+            }
+          }
+        });
+
+        setWorkerSalaries(salaryData);
+      } catch (error) {
+        console.error('Error fetching violations:', error);
+        toast.error('Failed to load violation data');
+      } finally {
+        setScanning(false);
+      }
+    };
+
+    fetchViolationsAndCalculate();
   }, []);
 
   const totalViolations = workerSalaries.reduce((sum, w) => sum + w.violations, 0);

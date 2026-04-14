@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Users, UserCheck, AlertTriangle, Video, Download, FileText, FileSpreadsheet } from 'lucide-react';
+import { Users, UserCheck, AlertTriangle, Video, Download, FileText, FileSpreadsheet, Globe, MapPin } from 'lucide-react';
+import madapeLogo from '@/assets/madape-logo.png';
 import { StatsCard } from '@/components/StatsCard';
 import { workers, alerts } from '@/data/workers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -133,11 +134,16 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
-            Real-time worker safety monitoring at Devbhoomi Uttarakhand University
-          </p>
+        <div className="flex items-center gap-4">
+          <img src={madapeLogo} alt="Madape" className="h-14 w-14 object-contain" />
+          <div>
+            <h1 className="text-3xl font-bold">Madape Dashboard</h1>
+            <p className="text-muted-foreground mt-1 flex items-center gap-2">
+              <MapPin className="h-3.5 w-3.5" /> Antananarivo, Madagascar
+              <span className="text-muted-foreground/50">•</span>
+              <Globe className="h-3.5 w-3.5" /> International Trade & Supply Chain
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button onClick={handleDownloadPDF} className="gap-2">

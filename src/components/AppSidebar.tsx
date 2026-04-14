@@ -11,6 +11,7 @@ import {
   Moon,
   Sun
 } from 'lucide-react';
+import madapeLogo from '@/assets/madape-logo.png';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   Sidebar,
@@ -52,14 +53,15 @@ export function AppSidebar() {
     <Sidebar className={isCollapsed ? 'w-16' : 'w-64'} collapsible="icon">
       <SidebarContent>
         <div className={`p-4 ${isCollapsed ? 'px-2' : ''}`}>
-          <h1 className={`font-bold text-primary ${isCollapsed ? 'text-xs text-center' : 'text-xl'}`}>
-            {isCollapsed ? 'NA' : 'Nirikshan AI'}
-          </h1>
-          {!isCollapsed && (
-            <p className="text-xs text-muted-foreground mt-1">
-              Devbhoomi Uttarakhand University
-            </p>
-          )}
+          <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
+            <img src={madapeLogo} alt="Madape" className={`${isCollapsed ? 'h-8 w-8' : 'h-10 w-10'} object-contain`} />
+            {!isCollapsed && (
+              <div>
+                <h1 className="font-bold text-primary text-xl">Madape</h1>
+                <p className="text-xs text-muted-foreground">La vision de demain</p>
+              </div>
+            )}
+          </div>
         </div>
         
         <Separator />

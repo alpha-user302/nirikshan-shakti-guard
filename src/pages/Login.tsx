@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
-import { Shield, Mail, Lock } from 'lucide-react';
+import { Mail, Lock } from 'lucide-react';
 import safetyHero from '@/assets/safety-hero.jpg';
+import madapeLogo from '@/assets/madape-logo.png';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -78,10 +79,11 @@ export default function Login() {
         />
         <div className="absolute inset-0 bg-gradient-to-br from-primary/90 to-secondary/90 flex items-center justify-center p-12">
           <div className="text-white space-y-6">
-            <Shield className="h-16 w-16" />
-            <h1 className="text-4xl font-bold">Nirikshan AI</h1>
-            <p className="text-xl">Worker Safety & PPE Monitoring System</p>
-            <p className="text-lg opacity-90">Devbhoomi Uttarakhand University</p>
+            <img src={madapeLogo} alt="Madape" className="h-20 w-20 object-contain bg-white rounded-xl p-2" />
+            <h1 className="text-4xl font-bold">Madape</h1>
+            <p className="text-xl">International Trade & Supply Chain</p>
+            <p className="text-lg opacity-90">Antananarivo, Madagascar</p>
+            <p className="text-sm opacity-75">La vision de demain, la réalité d'aujourd'hui</p>
           </div>
         </div>
       </div>
@@ -90,9 +92,7 @@ export default function Login() {
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="space-y-1">
             <div className="flex items-center justify-center mb-4">
-              <div className="p-3 rounded-full bg-primary/10">
-                <Shield className="h-8 w-8 text-primary" />
-              </div>
+              <img src={madapeLogo} alt="Madape" className="h-14 w-14 object-contain" />
             </div>
             <CardTitle className="text-2xl text-center">
               {isSignUp ? 'Create Account' : 'Welcome Back'}
@@ -110,7 +110,7 @@ export default function Login() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="admin@devbhoomi.ac.in"
+                    placeholder="admin@madape.mg"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
